@@ -4,25 +4,35 @@ const fs = require('fs');
 
 const url = 'https://share.dmhy.org';
 
-const scrape = async (name, episode) => {
-  const browser = await puppeteer.launch();
+/**
+ * 
+ * @param {puppeteer.Browser} browser 
+ * @param {*} name 
+ * @param {*} episode 
+ */
+const scrape = async (browser, name, episode) => {
   const page = await browser.newPage();
+  const keyword = `${name} ${episode}`;
 
-  await page.goto(encodeURI(`${url}/topics/list?keyword=${name} ${episode}`), {
-    waitUntil: 'networkidle0',
+  await page.goto(encodeURI(`${url}/topics/list?keyword=${keyword}`), {
+    waitUntil: 'networkidle2',
   });
 
   console.log('opened list page');
   const detailsPage = await page.evaluate((name, episode) => {
     const title = document.querySelector('td.title');
-    return title.children[1].getAttribute('href');
+    if (title) {
+      return title.children[1].getAttribute('href');
+    }
   });
 
-  console.log('navigating to detail page', detailsPage);
-  await page.goto(url + detailsPage, { waitUntil: 'networkidle0' });
+  if (!detailsPage) {
+    console.log(`could not find anything, keyword: ${keyword}`);
+    return;
+  }
 
-  console.log('taking screenshot..');
-  fs.writeFileSync('screenshot.jpg', await page.screenshot({ fullPage: true }));
+  console.log('navigating to detail page', detailsPage);
+  await page.goto(url + detailsPage, { waitUntil: 'networkidle2' });
 
   console.log('scraping magnet link...');
   const magnetLink = await page.evaluate(() => {
