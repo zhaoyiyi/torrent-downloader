@@ -1,26 +1,53 @@
 const path = require('path');
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+
+const TASKS_JSON = './tasks.json';
 
 const download = require('./download');
 const client = require('./client');
-const tasks = require('./tasks.json');
+const { nextEpisodeNumber, groupEntries } = require('./utils');
+const tasks = require(TASKS_JSON);
 
 const DOWNLOAD_PATH = path.resolve(__dirname, 'downloads');
 
+// scrape and download items
+const runScraper = async (browser, scrape, shows) => {
+  const taskEntries = await Promise.all(
+    Object.entries(shows).map(async ([showName, episode]) => {
+      const downloadLink = await scrape(browser, showName, episode);
+      if (downloadLink) {
+        await download(downloadLink, DOWNLOAD_PATH);
+        return [showName, nextEpisodeNumber(episode)];
+      }
+
+      return [showName, episode];
+    })
+  );
+
+  return groupEntries(taskEntries);
+};
+
 const start = async () => {
   const browser = await puppeteer.launch();
-  Object.entries(tasks).map(async ([scraperName, show]) => {
-    const scrape = require(path.resolve(__dirname, 'scrapers', scraperName));
+  // run all scrapers
+  const newTasks = await Promise.all(
+    Object.entries(tasks).map(async ([scraperName, shows]) => {
+      const scrape = require(path.resolve(__dirname, 'scrapers', scraperName));
 
-    // scrape show for with selected scraper
-    Object.entries(show).map(async ([showName, episode]) => {
-      console.log(showName);
-      const url = await scrape(browser, showName, episode);
-      if (url) {
-        await download(url, DOWNLOAD_PATH);
-      }
-    });
+      const updatedShows = await runScraper(browser, scrape, shows);
+      return [scraperName, updatedShows];
+    })
+  );
+
+  // update task json file
+  const json = JSON.stringify(groupEntries(newTasks), null, 2);
+  fs.writeFileSync(TASKS_JSON, json);
+
+  client.destroy(() => {
+    process.exit();
   });
+  
 };
 
 start();

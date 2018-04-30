@@ -7,8 +7,8 @@ const url = 'https://share.dmhy.org';
 /**
  * 
  * @param {puppeteer.Browser} browser 
- * @param {*} name 
- * @param {*} episode 
+ * @param {string} name 
+ * @param {string} episode 
  */
 const scrape = async (browser, name, episode) => {
   const page = await browser.newPage();
