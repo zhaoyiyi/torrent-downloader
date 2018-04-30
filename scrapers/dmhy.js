@@ -8,7 +8,7 @@ const scrape = async (name, episode) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  await page.goto(encodeURI(`${url}/topics/list?keyword=${name}`), {
+  await page.goto(encodeURI(`${url}/topics/list?keyword=${name} ${episode}`), {
     waitUntil: 'networkidle0',
   });
 
@@ -35,8 +35,3 @@ const scrape = async (name, episode) => {
 };
 
 module.exports = scrape;
-
-(async () => {
-  const link = await scrape('我的英雄学院 1080p', '03');
-  console.log(link);
-})();
