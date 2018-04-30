@@ -12,16 +12,16 @@ const tasks = require(TASKS_JSON);
 const DOWNLOAD_PATH = path.resolve(__dirname, 'downloads');
 
 // scrape and download items
-const runScraper = async (browser, scrape, shows) => {
+const runScraper = async (browser, scrape, item) => {
   const taskEntries = await Promise.all(
-    Object.entries(shows).map(async ([showName, episode]) => {
-      const downloadLink = await scrape(browser, showName, episode);
+    Object.entries(item).map(async ([keyword, episode]) => {
+      const downloadLink = await scrape(browser, keyword, episode);
       if (downloadLink) {
         await download(downloadLink, DOWNLOAD_PATH);
-        return [showName, nextEpisodeNumber(episode)];
+        return [keyword, nextEpisodeNumber(episode)];
       }
 
-      return [showName, episode];
+      return [keyword, episode];
     })
   );
 
@@ -32,11 +32,11 @@ const start = async () => {
   const browser = await puppeteer.launch();
   // run all scrapers
   const newTasks = await Promise.all(
-    Object.entries(tasks).map(async ([scraperName, shows]) => {
+    Object.entries(tasks).map(async ([scraperName, items]) => {
       const scrape = require(path.resolve(__dirname, 'scrapers', scraperName));
 
-      const updatedShows = await runScraper(browser, scrape, shows);
-      return [scraperName, updatedShows];
+      const updatedItems = await runScraper(browser, scrape, items);
+      return [scraperName, updatedItems];
     })
   );
 
