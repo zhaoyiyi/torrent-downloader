@@ -18,7 +18,7 @@ Create a `tasks.json` in the following format
 ## Example `tasks.json`
 ```json
 {
-  "dmhy": {
+  "dmhy.rss": {
     "我的英雄学院 第三季 1080p": "05",
     "澄空学园 女神异闻录5 MP4 720p": "05"
   }
