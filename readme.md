@@ -1,5 +1,8 @@
 # Torrent downloader
-Scrapes the website and download predefined items.
+Search and download pre-defined torrents
+
+1. add `tasks.json`(see below)
+2. `node index`
 
 ## Config
 Create a `tasks.json` in the following format
@@ -19,8 +22,8 @@ Create a `tasks.json` in the following format
 ```json
 {
   "dmhy.rss": {
-    "我的英雄学院 第三季 1080p": "05",
-    "澄空学园 女神异闻录5 MP4 720p": "05"
+    "boku no hero academia 1080p s03": "05",
+    "persona 5 the animation 1080p big5": "05"
   }
 }
 ```
