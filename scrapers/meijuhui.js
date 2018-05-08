@@ -16,7 +16,6 @@ const scrape = async (browser, keywords, episode) => {
     waitUntil: 'networkidle2',
   });
 
-  await page.screenshot({ path: 'screenshot.png', height: 2000 });
   try {
     const magnetLink = await page.evaluate(
       (keyword, episode) => {
@@ -25,15 +24,23 @@ const scrape = async (browser, keywords, episode) => {
         );
         const index = Number(episode) - 1;
         const item = title.nextSibling.children[index];
-        return item && item.children[1] && item.children[1].href;
+        if (item) {
+          return Array.from(item.children).find(a => a.href.includes('magnet')).href;
+        }
       },
       keyword,
       episode
     );
-    console.log(magnetLink);
+
+    if (magnetLink) {
+      console.log(`found link for ${id} episode ${episode}`, magnetLink);
+    } else {
+      console.log(`could not found link for ${id} episode ${episode}`);
+    }
+
     return magnetLink;
   } catch (err) {
-    console.log(`could not find E${episode}`, err);
+    console.error(`an error occurred while finding ${keywords}`, err);
     return;
   }
 };
